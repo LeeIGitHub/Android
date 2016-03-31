@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">AutoSilent</string>
+    <string name="action_settings">Settings</string>
+
+    <string-array  name="ringer_mode">
+        <item name="silent">Silent</item>
+        <item name="vibrate">Vibrate</item>
+        <item name="normal">Normal</item>
+    </string-array >
+</resources>
