@@ -16,10 +16,15 @@
 package lee.afk.afkhttp.volley.toolbox;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import lee.afk.afkhttp.volley.VolleyError;
 import lee.afk.afkhttp.volley.toolbox.ImageLoader.ImageContainer;
@@ -30,7 +35,20 @@ import lee.afk.afkhttp.volley.toolbox.ImageLoader.ImageListener;
  * associated request.
  */
 public class NetworkImageView extends ImageView {
-    /** The URL of the network image to load */
+    /**
+     * Lee
+     * 新增设置图片时的监听
+     * 若返回true，则消耗该事件，不做其他处理
+     */
+    public interface OnImageSetListener {
+        Bitmap onImageSet(Bitmap bitmap, String imageUrl);
+    }
+
+    private List<OnImageSetListener> mOnImageSetListenerList;
+
+    /**
+     * The URL of the network image to load
+     */
     private String mUrl;
 
     /**
@@ -43,10 +61,14 @@ public class NetworkImageView extends ImageView {
      */
     private int mErrorImageId;
 
-    /** Local copy of the ImageLoader. */
+    /**
+     * Local copy of the ImageLoader.
+     */
     private ImageLoader mImageLoader;
 
-    /** Current ImageContainer. (either in-flight or finished) */
+    /**
+     * Current ImageContainer. (either in-flight or finished)
+     */
     private ImageContainer mImageContainer;
 
     public NetworkImageView(Context context) {
@@ -58,7 +80,11 @@ public class NetworkImageView extends ImageView {
     }
 
     public NetworkImageView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+        this(context, attrs, defStyle, 0);
+    }
+
+    public NetworkImageView(Context context, AttributeSet attrs, int defStyle, int defStyleRes) {
+        super(context, attrs, defStyle, defStyleRes);
     }
 
     /**
@@ -98,6 +124,7 @@ public class NetworkImageView extends ImageView {
 
     /**
      * Loads the image for the view if it isn't already loaded.
+     *
      * @param isInLayoutPass True if this was invoked from get layout pass, false otherwise.
      */
     void loadImageIfNecessary(final boolean isInLayoutPass) {
@@ -171,12 +198,28 @@ public class NetworkImageView extends ImageView {
                             });
                             return;
                         }
-
-                        if (response.getBitmap() != null) {
+                        /**
+                         * 原版代码，为了加入Bitmap处理，新增监听
+                         */
+                        /*if (response.getBitmap() != null) {
                             setImageBitmap(response.getBitmap());
                         } else if (mDefaultImageId != 0) {
                             setImageResource(mDefaultImageId);
+                        }*/
+
+                        if (response.getBitmap() != null) {
+                            Bitmap bitmap = response.getBitmap();
+                            if (mOnImageSetListenerList == null || mOnImageSetListenerList.size() < 1)
+                                setImageBitmap(bitmap);
+                            else {
+                                for (OnImageSetListener listener : mOnImageSetListenerList) {
+                                    setImageBitmap(listener.onImageSet(bitmap, response.getRequestUrl()));
+                                }
+                            }
+                        } else if (mDefaultImageId != 0) {
+                            setImageResource(mDefaultImageId);
                         }
+
                     }
                 }, maxWidth, maxHeight, scaleType);
 
@@ -185,12 +228,30 @@ public class NetworkImageView extends ImageView {
     }
 
     private void setDefaultImageOrNull() {
-        if(mDefaultImageId != 0) {
+        if (mDefaultImageId != 0) {
             setImageResource(mDefaultImageId);
-        }
-        else {
+        } else {
             setImageBitmap(null);
         }
+    }
+
+    /**
+     * 设置监听设置图片
+     *
+     * @param onImageSetListener
+     */
+    public void addOnImageSetListener(OnImageSetListener onImageSetListener) {
+        if (mOnImageSetListenerList == null) {
+            mOnImageSetListenerList = new ArrayList<>();
+        }
+        mOnImageSetListenerList.add(onImageSetListener);
+    }
+
+    public void removeOnImageSetListener(OnImageSetListener onImageSetListener) {
+        if (mOnImageSetListenerList == null) {
+            mOnImageSetListenerList = new ArrayList<>();
+        }
+        mOnImageSetListenerList.remove(onImageSetListener);
     }
 
     @Override

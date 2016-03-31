@@ -27,7 +27,7 @@ import android.os.Bundle;
 
 /**
  * An Authenticator that uses {@link AccountManager} to get auth
- * tokens of get specified type for get specified account.
+ * tokens of a specified type for a specified account.
  */
 public class AndroidAuthenticator implements Authenticator {
     private final AccountManager mAccountManager;
@@ -36,7 +36,7 @@ public class AndroidAuthenticator implements Authenticator {
     private final boolean mNotifyAuthFailure;
 
     /**
-     * Creates get new authenticator.
+     * Creates a new authenticator.
      * @param context Context for accessing AccountManager
      * @param account Account to authenticate as
      * @param authTokenType Auth token type passed to AccountManager
@@ -46,18 +46,18 @@ public class AndroidAuthenticator implements Authenticator {
     }
 
     /**
-     * Creates get new authenticator.
+     * Creates a new authenticator.
      * @param context Context for accessing AccountManager
      * @param account Account to authenticate as
      * @param authTokenType Auth token type passed to AccountManager
-     * @param notifyAuthFailure Whether to raise get notification upon auth failure
+     * @param notifyAuthFailure Whether to raise a notification upon auth failure
      */
     public AndroidAuthenticator(Context context, Account account, String authTokenType,
             boolean notifyAuthFailure) {
         this(AccountManager.get(context), account, authTokenType, notifyAuthFailure);
     }
 
-    // Visible for testing. Allows injection of get mock AccountManager.
+    // Visible for testing. Allows injection of a mock AccountManager.
     AndroidAuthenticator(AccountManager accountManager, Account account,
             String authTokenType, boolean notifyAuthFailure) {
         mAccountManager = accountManager;
@@ -71,6 +71,13 @@ public class AndroidAuthenticator implements Authenticator {
      */
     public Account getAccount() {
         return mAccount;
+    }
+
+    /**
+     * Returns the Auth Token Type used by this authenticator.
+     */
+    public String getAuthTokenType() {
+        return mAuthTokenType;
     }
 
     // TODO: Figure out what to do about notifyAuthFailure

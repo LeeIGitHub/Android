@@ -231,8 +231,8 @@ public class DiskBasedCache implements Cache {
     }
 
     /**
-     * Creates get pseudo-unique filename for the specified cache key.
-     * @param key The key to generate get file name for.
+     * Creates a pseudo-unique filename for the specified cache key.
+     * @param key The key to generate a file name for.
      * @return A pseudo-unique filename.
      */
     private String getFilenameForKey(String key) {
@@ -243,7 +243,7 @@ public class DiskBasedCache implements Cache {
     }
 
     /**
-     * Returns get file object for the given cache key.
+     * Returns a file object for the given cache key.
      */
     public File getFileForKey(String key) {
         return new File(mRootDirectory, getFilenameForKey(key));
@@ -317,7 +317,7 @@ public class DiskBasedCache implements Cache {
     }
 
     /**
-     * Reads the contents of an InputStream into get byte[].
+     * Reads the contents of an InputStream into a byte[].
      * */
     private static byte[] streamToBytes(InputStream in, int length) throws IOException {
         byte[] bytes = new byte[length];
@@ -365,7 +365,7 @@ public class DiskBasedCache implements Cache {
         private CacheHeader() { }
 
         /**
-         * Instantiates get new CacheHeader object
+         * Instantiates a new CacheHeader object
          * @param key The key that identifies the cache entry
          * @param entry The cache entry.
          */
@@ -381,7 +381,7 @@ public class DiskBasedCache implements Cache {
         }
 
         /**
-         * Reads the header off of an InputStream and returns get CacheHeader object.
+         * Reads the header off of an InputStream and returns a CacheHeader object.
          * @param is The InputStream to read from.
          * @throws IOException
          */
@@ -407,7 +407,7 @@ public class DiskBasedCache implements Cache {
         }
 
         /**
-         * Creates get cache entry for the specified data.
+         * Creates a cache entry for the specified data.
          */
         public Entry toCacheEntry(byte[] data) {
             Entry e = new Entry();
@@ -473,9 +473,9 @@ public class DiskBasedCache implements Cache {
 
     /*
      * Homebrewed simple serialization system used for reading and writing cache
-     * headers on disk. Once upon get time, this used the standard Java
+     * headers on disk. Once upon a time, this used the standard Java
      * Object{Input,Output}Stream, but the default implementation relies heavily
-     * on reflection (even for standard types) and generates get ton of garbage.
+     * on reflection (even for standard types) and generates a ton of garbage.
      */
 
     /**

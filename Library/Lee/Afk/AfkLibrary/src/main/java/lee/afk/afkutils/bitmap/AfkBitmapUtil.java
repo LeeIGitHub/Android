@@ -1,4 +1,4 @@
-package lee.afk.afkbitmap;
+package lee.afk.afkutils.bitmap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,7 +8,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
@@ -154,7 +157,7 @@ public class AfkBitmapUtil {
 	}
 
 	/**
-	 * 将Bitmap缩放到置顶大小
+	 * 将Bitmap缩放到指定大小
 	 * @param bitmap
 	 * @param w
 	 * @param h
@@ -170,8 +173,26 @@ public class AfkBitmapUtil {
 		float scaleWidth=((float)newWidth)/width;
 		float scaleHeight=((float)newHeight)/height;
 		Matrix matrix = new Matrix();
-		matrix.postScale(scaleWidth,scaleHeight);
+		matrix.postScale(scaleWidth, scaleHeight);
 		Bitmap newBitmap = Bitmap.createBitmap(BitmapOrg,0,0,width,height,matrix,true);
 		return newBitmap;
 	}
+
+	/**
+	 * 将Drawable转化为Bitmap
+	 *
+	 * @param drawable
+	 * @return
+	 */
+	public static Bitmap getBitmapFromDrawable(Drawable drawable) {
+		int width = drawable.getIntrinsicWidth();
+		int height = drawable.getIntrinsicHeight();
+		Bitmap.Config config = drawable.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
+		Bitmap bitmap = Bitmap.createBitmap(width, height, config);
+		Canvas canvas = new Canvas(bitmap);
+		drawable.setBounds(0, 0, width, height);
+		drawable.draw(canvas);
+		return bitmap;
+	}
+
 }

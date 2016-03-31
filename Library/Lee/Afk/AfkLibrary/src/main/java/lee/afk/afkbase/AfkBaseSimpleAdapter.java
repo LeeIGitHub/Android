@@ -123,9 +123,7 @@ public class AfkBaseSimpleAdapter extends BaseAdapter implements Filterable {
 	}
 
 	/**
-	 * <p>
 	 * Sets the layout resource to create the drop down views.
-	 * </p>
 	 *
 	 * @param resource
 	 *            the layout resource defining the drop down views

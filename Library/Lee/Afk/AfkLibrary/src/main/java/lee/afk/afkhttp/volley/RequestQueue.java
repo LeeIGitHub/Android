@@ -209,7 +209,7 @@ public class RequestQueue {
      */
     public void cancelAll(final Object tag) {
         if (tag == null) {
-            throw new IllegalArgumentException("Cannot cancelAll with get null tag");
+            throw new IllegalArgumentException("Cannot cancelAll with a null tag");
         }
         cancelAll(new RequestFilter() {
             @Override

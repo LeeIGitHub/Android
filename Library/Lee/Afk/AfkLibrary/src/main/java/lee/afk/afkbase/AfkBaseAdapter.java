@@ -1,5 +1,6 @@
 package lee.afk.afkbase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -8,8 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import butterknife.ButterKnife;
+
 public abstract class AfkBaseAdapter<T> extends BaseAdapter {
-	protected List<T> mData;
+	private List<T> mData;
 	protected LayoutInflater mInflater;
 
 	public AfkBaseAdapter(Context context, List<T> data) {
@@ -33,21 +36,23 @@ public abstract class AfkBaseAdapter<T> extends BaseAdapter {
 
 	@Override
 	public long getItemId(int position) {
-		return 0;
+		return position;
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		View v = null;
+		ViewHolder holder ;
 		if (convertView == null) {
-			 v = mInflater.inflate(returnLayout(), parent, false);
+			 convertView = mInflater.inflate(returnLayout(), parent, false);
+			holder = returnVieHolder(convertView);
+			convertView.setTag(holder);
 		} else {
-			v = convertView;
+			holder = (ViewHolder)convertView.getTag();
 		}
 
-		bindView(position, v);
+		bindView(position, holder,getData().get(position));
 
-		return v;
+		return convertView;
 	}
 	
 	/**
@@ -58,7 +63,9 @@ public abstract class AfkBaseAdapter<T> extends BaseAdapter {
 	 */
 	protected abstract int returnLayout();
 
-	protected abstract void bindView(int position, View v);
+	protected abstract ViewHolder returnVieHolder(View view);
+
+	protected abstract void bindView(int position, ViewHolder holder,T info);
 
 	/**
 	 * 刷新数据
@@ -67,5 +74,23 @@ public abstract class AfkBaseAdapter<T> extends BaseAdapter {
 	public void refresh(List<T> data){
 		this.mData = data;
 		notifyDataSetChanged();
+	}
+
+	/**
+	 * 获取数据
+	 * @return
+	 */
+	public List<T> getData(){
+		if(mData == null){
+			mData = new ArrayList<>();
+		}
+		return mData;
+	}
+
+
+	public static class ViewHolder{
+		public ViewHolder(View view) {
+			ButterKnife.bind(this, view);
+		}
 	}
 }

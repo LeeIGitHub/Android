@@ -87,6 +87,9 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     /** Whether or not get response has been delivered for this request yet. */
     private boolean mResponseDelivered = false;
 
+    /** Whether the request should be retried in the event of an HTTP 5xx (server) error. */
+    private boolean mShouldRetryServerErrors = false;
+
     /** The retry policy for this request. */
     private RetryPolicy mRetryPolicy;
 
@@ -206,7 +209,7 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     /**
      * Notifies the request queue that this request has finished (successfully or with error).
      *
-     * <p>Also dumps all events from this request's event log; for debugging.</p>
+     * Also dumps all events from this request's event log; for debugging.
      */
     void finish(final String tag) {
         if (mRequestQueue != null) {
@@ -468,6 +471,23 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      */
     public final boolean shouldCache() {
         return mShouldCache;
+    }
+
+    /**
+     * Sets whether or not the request should be retried in the event of an HTTP 5xx (server) error.
+     *
+     * @return This Request object to allow for chaining.
+     */
+    public final Request<?> setShouldRetryServerErrors(boolean shouldRetryServerErrors) {
+        mShouldRetryServerErrors = shouldRetryServerErrors;
+        return this;
+    }
+
+    /**
+     * Returns true if this request should be retried in the event of an HTTP 5xx (server) error.
+     */
+    public final boolean shouldRetryServerErrors() {
+        return mShouldRetryServerErrors;
     }
 
     /**

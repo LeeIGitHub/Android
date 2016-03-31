@@ -15,19 +15,28 @@ public class AfkWifiTools {
     }
 
     /**
-     * 获取当前wifi 的 SSID
+     * 获取当前wifiinfo
      * @param context
      * @return
      */
-    public static String getWifiNowSSID(Context context){
+    public static WifiInfo getWifiInfo(Context context){
         WifiManager wifiManager = getWifiManager(context);
 
         int wifiState = wifiManager.getWifiState();
 
         if(wifiState != WifiManager.WIFI_STATE_ENABLED && wifiState != WifiManager.WIFI_STATE_ENABLING)
-            return "";
+            return null;
 
-        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        return wifiManager.getConnectionInfo();
+    }
+
+    /**
+     * 获取当前wifi 的 SSID
+     * @param context
+     * @return
+     */
+    public static String getWifiNowSSID(Context context){
+        WifiInfo wifiInfo = getWifiInfo(context);
 
         if(wifiInfo == null)
             return "";
@@ -41,14 +50,10 @@ public class AfkWifiTools {
      * @return
      */
     public static String getWifiMacAddress(Context context){
-        WifiManager wifiManager = getWifiManager(context);
+        WifiInfo wifiInfo = getWifiInfo(context);
 
-        int wifiState = wifiManager.getWifiState();
-
-        if(wifiState != WifiManager.WIFI_STATE_ENABLED && wifiState != WifiManager.WIFI_STATE_ENABLING)
+        if(wifiInfo == null)
             return "";
-
-        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 
         return wifiInfo.getMacAddress();
     }

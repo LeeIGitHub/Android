@@ -47,6 +47,9 @@ public class NavigationDrawerFragment extends Fragment {
         press(v);
     }
 
+    @OnClick(R.id.dm_btn_afk_http2)
+    public void pressAfkHttp2(View v){press(v);}
+
     private void press(View v){
         if(onDrawerItemClickListener != null){
             onDrawerItemClickListener.onCLick(v);

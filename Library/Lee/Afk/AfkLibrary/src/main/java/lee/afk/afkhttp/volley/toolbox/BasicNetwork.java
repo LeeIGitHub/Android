@@ -18,7 +18,10 @@ package lee.afk.afkhttp.volley.toolbox;
 
 import android.os.SystemClock;
 
+import com.android.volley.ClientError;
+
 import lee.afk.afkhttp.volley.AuthFailureError;
+import lee.afk.afkhttp.volley.Cache;
 import lee.afk.afkhttp.volley.Cache.Entry;
 import lee.afk.afkhttp.volley.Network;
 import lee.afk.afkhttp.volley.NetworkError;
@@ -67,14 +70,14 @@ public class BasicNetwork implements Network {
      * @param httpStack HTTP stack to be used
      */
     public BasicNetwork(HttpStack httpStack) {
-        // If get pool isn't passed in, then build get small default pool that will give us get lot of
+        // If a pool isn't passed in, then build a small default pool that will give us a lot of
         // benefit and not use too much memory.
         this(httpStack, new ByteArrayPool(DEFAULT_POOL_SIZE));
     }
 
     /**
      * @param httpStack HTTP stack to be used
-     * @param pool get buffer pool that improves GC performance in copy operations
+     * @param pool a buffer pool that improves GC performance in copy operations
      */
     public BasicNetwork(HttpStack httpStack, ByteArrayPool pool) {
         mHttpStack = httpStack;
@@ -121,7 +124,7 @@ public class BasicNetwork implements Network {
                 if (httpResponse.getEntity() != null) {
                   responseContents = entityToBytes(httpResponse.getEntity());
                 } else {
-                  // Add 0 byte response as get way of honestly representing get
+                  // Add 0 byte response as a way of honestly representing a
                   // no-content request.
                   responseContents = new byte[0];
                 }
@@ -142,14 +145,14 @@ public class BasicNetwork implements Network {
             } catch (MalformedURLException e) {
                 throw new RuntimeException("Bad URL " + request.getUrl(), e);
             } catch (IOException e) {
-                int statusCode = 0;
-                NetworkResponse networkResponse = null;
+                int statusCode;
                 if (httpResponse != null) {
                     statusCode = httpResponse.getStatusLine().getStatusCode();
                 } else {
                     throw new NoConnectionError(e);
                 }
                 VolleyLog.e("Unexpected response code %d for %s", statusCode, request.getUrl());
+                NetworkResponse networkResponse;
                 if (responseContents != null) {
                     networkResponse = new NetworkResponse(statusCode, responseContents,
                             responseHeaders, false, SystemClock.elapsedRealtime() - requestStart);
@@ -157,12 +160,22 @@ public class BasicNetwork implements Network {
                             statusCode == HttpStatus.SC_FORBIDDEN) {
                         attemptRetryOnException("auth",
                                 request, new AuthFailureError(networkResponse));
+                    } else if (statusCode >= 400 && statusCode <= 499) {
+                        // Don't retry other client errors.
+                        throw new ClientError(networkResponse);
+                    } else if (statusCode >= 500 && statusCode <= 599) {
+                        if (request.shouldRetryServerErrors()) {
+                            attemptRetryOnException("server",
+                                    request, new ServerError(networkResponse));
+                        } else {
+                            throw new ServerError(networkResponse);
+                        }
                     } else {
-                        // TODO: Only throw ServerError for 5xx status codes.
+                        // 3xx? No reason to retry.
                         throw new ServerError(networkResponse);
                     }
                 } else {
-                    throw new NetworkError(networkResponse);
+                    attemptRetryOnException("network", request, new NetworkError());
                 }
             }
         }
@@ -182,8 +195,8 @@ public class BasicNetwork implements Network {
     }
 
     /**
-     * Attempts to prepare the request for get retry. If there are no more attempts remaining in the
-     * request's retry policy, get timeout exception is thrown.
+     * Attempts to prepare the request for a retry. If there are no more attempts remaining in the
+     * request's retry policy, a timeout exception is thrown.
      * @param request The request to use.
      */
     private static void attemptRetryOnException(String logPrefix, Request<?> request,
@@ -201,7 +214,7 @@ public class BasicNetwork implements Network {
         request.addMarker(String.format("%s-retry [timeout=%s]", logPrefix, oldTimeout));
     }
 
-    private void addCacheHeaders(Map<String, String> headers, Entry entry) {
+    private void addCacheHeaders(Map<String, String> headers, Cache.Entry entry) {
         // If there's no cache entry, we're done.
         if (entry == null) {
             return;
@@ -222,7 +235,7 @@ public class BasicNetwork implements Network {
         VolleyLog.v("HTTP ERROR(%s) %d ms to fetch %s", what, (now - start), url);
     }
 
-    /** Reads the contents of HttpEntity into get byte[]. */
+    /** Reads the contents of HttpEntity into a byte[]. */
     private byte[] entityToBytes(HttpEntity entity) throws IOException, ServerError {
         PoolingByteArrayOutputStream bytes =
                 new PoolingByteArrayOutputStream(mPool, (int) entity.getContentLength());
@@ -253,7 +266,7 @@ public class BasicNetwork implements Network {
     }
 
     /**
-     * Converts Headers[] to Map String, String.
+     * Converts Headers[] to Map<String, String>.
      */
     protected static Map<String, String> convertHeaders(Header[] headers) {
         Map<String, String> result = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);

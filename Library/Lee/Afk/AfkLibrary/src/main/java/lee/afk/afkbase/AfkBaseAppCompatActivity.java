@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import butterknife.ButterKnife;
+
 /**
  * this activity extends android.support.v7.app.AppCompatActivity;
  */
@@ -26,7 +28,9 @@ public abstract class AfkBaseAppCompatActivity extends AppCompatActivity
         initView(savedInstanceState);
     }
 
-    protected abstract void init();
+    protected void init(){
+        ButterKnife.bind(this);
+    }
 
     /**
      * 返回layout res id 相当于调用setCotentView

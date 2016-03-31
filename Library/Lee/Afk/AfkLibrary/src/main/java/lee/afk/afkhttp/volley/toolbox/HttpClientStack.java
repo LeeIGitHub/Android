@@ -97,7 +97,7 @@ public class HttpClientStack implements HttpStack {
             case Method.DEPRECATED_GET_OR_POST: {
                 // This is the deprecated way that needs to be handled for backwards compatibility.
                 // If the request's post body is null, then the assumption is that the request is
-                // GET.  Otherwise, it is assumed that the request is get POST.
+                // GET.  Otherwise, it is assumed that the request is a POST.
                 byte[] postBody = request.getPostBody();
                 if (postBody != null) {
                     HttpPost postRequest = new HttpPost(request.getUrl());
@@ -155,7 +155,7 @@ public class HttpClientStack implements HttpStack {
     /**
      * Called before the request is executed using the underlying HttpClient.
      *
-     * <p>Overwrite in subclasses to augment the request.</p>
+     * Overwrite in subclasses to augment the request.
      */
     protected void onPrepareRequest(HttpUriRequest request) throws IOException {
         // Nothing.

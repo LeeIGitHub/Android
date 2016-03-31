@@ -9,16 +9,20 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
-import android.view.View;
 import android.view.ViewGroup;
+
+import lee.afk.afkhttp.volley.toolbox.NetworkImageView;
+import lee.afk.afkutils.bitmap.AfkBitmapUtil;
+import lee.afk.afkutils.log.LeeLog;
 
 /**
  * Created by Lee on 2015/9/21.
  */
-public class AfkImageView_BANK extends View {
+public class AfkImageView_BANK extends NetworkImageView {
 
     public enum AnimType {
         ALPHA_ANIM,
+        CENTER_EXPAND,
     }
 
     /**
@@ -50,7 +54,7 @@ public class AfkImageView_BANK extends View {
     private Paint mPaint;
 
     private TransitionAnimation mTransitionAnimation;
-    private Drawable mLastDrawable;
+
     private Drawable mDrawable;
 
     /**
@@ -80,7 +84,12 @@ public class AfkImageView_BANK extends View {
     /**
      * 是否播放动画的开关
      */
-    private boolean mExcessiveAnimatorEable;
+    private boolean mTransitionAnimatorEnable;
+
+    /**
+     * 动画时间、效果渐变时间
+     */
+    private int mDuration;
 
     public AfkImageView_BANK(Context context) {
         this(context, null);
@@ -116,8 +125,8 @@ public class AfkImageView_BANK extends View {
             return;
         }
 
-        if (mLastDrawable == null || mTransitionAnimation == null || mExcessiveAnimatorEable == false) {
-            drawWithOutExcessiveAnimation(canvas);
+        if (mTransitionAnimation == null || mTransitionAnimatorEnable == false) {
+            drawWithOutTransitionAnimation(canvas);
         } else {
             drawWithAnimation(canvas);
         }
@@ -134,17 +143,19 @@ public class AfkImageView_BANK extends View {
         int ewidth = MeasureSpec.getSize(widthMeasureSpec);
         int eheight = MeasureSpec.getSize(heightMeasureSpec);
 
-        width = resolveAdjustedSize(mFirstImageWidth,ewidth,widthMeasureSpec);
-        height = resolveAdjustedSize(mFirstImageHeight,eheight,heightMeasureSpec);
+        width = resolveAdjustedSize(mFirstImageWidth, ewidth, widthMeasureSpec);
+        height = resolveAdjustedSize(mFirstImageHeight, eheight, heightMeasureSpec);
 
         mWidth = width;
         mHeight = height;
 
-        mImageWidth = mFirstImageWidth;
-        mImageHeight = mFirstImageHeight;
+//        mImageWidth = mFirstImageWidth;
+//        mImageHeight = mFirstImageHeight;
+
+        mImageWidth = setDrawableSize(mFirstImageWidth, mWidth, widthMeasureSpec);
+        mImageHeight = setDrawableSize(mFirstImageHeight, mHeight, heightMeasureSpec);
 
         setDrawableSize(mDrawable);
-        setDrawableSize(mLastDrawable);
         setMeasuredDimension(width, height);
     }
 
@@ -153,29 +164,36 @@ public class AfkImageView_BANK extends View {
     //_____________________________________________________________________
     private void init() {
         mPaint = new Paint();
-        mAnimType = AnimType.ALPHA_ANIM;
+//        mAnimType = AnimType.ALPHA_ANIM;
+        mAnimType = AnimType.CENTER_EXPAND;
 
         mFirstImageHeight = -1;
         mFirstImageWidth = -1;
 
-        setExcessiveAnimation(mAnimType);
-        setExcessiveAnimationEnable(true);
+        mDuration = 500;
+
+        setTransitionAnimation(mAnimType);
+        setTransitionAnimationEnable(true);
     }
 
-    private void drawWithOutExcessiveAnimation(Canvas canvas) {
+    private void drawWithOutTransitionAnimation(Canvas canvas) {
+        canvas.save();
+//        canvas.drawBitmap(drawableToBitmap(mDrawable), 0,0, new Paint());
         mDrawable.draw(canvas);
+        LeeLog.p("drawWithOutTransitionAnimation    animation width {0} height {1}", mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
+        canvas.restore();
     }
 
     private void setDrawable(Drawable drawable) {
-        if (mTransitionAnimation == null) {
-            throw new NullPointerException("you must setTransitionAnimation() before setImage(),and this can't be null");
-        }
 
-        if (drawable == null)
+        if (drawable == null) {
+            /**
+             * （呼叫豆神）
+             *   这里要做设置图片为null的处理，就是什么都没有的图片
+             */
+            super.setImageResource(android.R.color.transparent);
             return;
-
-        if (mDrawable != null)
-            mLastDrawable = mDrawable;
+        }
 
         mDrawable = drawable;
 
@@ -189,27 +207,23 @@ public class AfkImageView_BANK extends View {
             }
         }
 
-//        setDrawableSize(mDrawable);
         setDrawableSize(mDrawable);
-        setDrawableSize(mLastDrawable);
 
         mAnimationStartTime = System.currentTimeMillis();
 
-//        if(mLastDrawable != null){
-//            setDrawableSize(mLastDrawable);
-//        }
-
-        if(mTransitionAnimation != null) {
-            mTransitionAnimation.setImage(mDrawable);
-        }
 
         invalidate();
     }
 
-    private void setExcessiveAnimation(AnimType type) {
+    private void setTransitionAnimation(AnimType type) {
         switch (type) {
             case ALPHA_ANIM:
-                setExcessiveAnimation(new AlphaAnimation());
+                setTransitionAnimation(new AlphaAnimation());
+                setDuration(500);
+                break;
+            case CENTER_EXPAND:
+                setTransitionAnimation(new CenterExpandAnimation());
+                setDuration(500);
                 break;
         }
     }
@@ -217,7 +231,38 @@ public class AfkImageView_BANK extends View {
     private void setDrawableSize(Drawable drawable) {
         if (drawable == null)
             return;
-        drawable.setBounds(0, 0, mImageWidth, mImageHeight);
+
+        if (mImageWidth <= 0 || mImageHeight <= 0)
+            return;
+
+        if (mOldWidth == mImageWidth && mOldHeight == mImageHeight)
+            return;
+
+        /**
+         * 设置下图片大小，将图片设为和预期一样的大小（预期大小 见 @see AfkImageView # setDrawableSize(int, int, int)
+         */
+        Bitmap oldBitmap = AfkBitmapUtil.getBitmapFromDrawable(drawable);
+        Bitmap newBitmap = AfkBitmapUtil.setBitmapSize(oldBitmap, mImageWidth, mImageHeight);
+        mDrawable = new BitmapDrawable(getResources(), newBitmap);
+        mDrawable.setBounds(0, 0, mImageWidth, mImageHeight);
+
+        if (mTransitionAnimation != null) {
+            mTransitionAnimation.setImage(mDrawable);
+        }
+    }
+
+    private int setDrawableSize(int imageSize, int layoutSize, int measureSpec) {
+        int specMode = MeasureSpec.getMode(measureSpec);
+        int result = layoutSize;
+        switch (specMode) {
+            case MeasureSpec.AT_MOST:
+                result = imageSize;
+                break;
+            case MeasureSpec.EXACTLY:
+                result = layoutSize;
+                break;
+        }
+        return result;
     }
 
     private int resolveAdjustedSize(int imageSize, int layoutSize, int measureSpec) {
@@ -231,10 +276,10 @@ public class AfkImageView_BANK extends View {
                     result = layoutSize;
                 break;
             case MeasureSpec.AT_MOST:
-                result = layoutSize;
+                result = imageSize;
                 break;
             case MeasureSpec.EXACTLY:
-                result = imageSize;
+                result = layoutSize;
                 break;
         }
         return result;
@@ -263,6 +308,10 @@ public class AfkImageView_BANK extends View {
         mAnimationFinish = mTransitionAnimation.draw(canvas);
         if (mAnimationFinish) {
             //animation is finish
+            /**
+             * 当动画结束后，关闭动画效果
+             */
+//            setTransitionAnimationEnable(false);
         } else {
             delayedRefresh(REFRESH_INTERVAL);
         }
@@ -284,6 +333,7 @@ public class AfkImageView_BANK extends View {
     private void delayedRefresh(int delayedTime) {
         mHandler.sendEmptyMessageDelayed(0, delayedTime);
     }
+
     //=====================================================================
     //-----------------------     public     -----------------------------
     //_____________________________________________________________________
@@ -294,14 +344,33 @@ public class AfkImageView_BANK extends View {
 //    public void setScaleType() {
 //
 //    }
+    @Override
+    public void setImageBitmap(Bitmap bm) {
+//        super.setImageBitmap(bm);
+        setImage(bm);
+    }
+
+    @Override
+    public void setImageResource(int resId) {
+//        super.setImageResource(resId);
+        setImage(resId);
+    }
+
+    @Override
+    public void setImageDrawable(Drawable drawable) {
+//        super.setImageDrawable(drawable);
+        setImage(drawable);
+    }
+
     public void setImage(int res) {
         Drawable drawable = getResources().getDrawable(res);
-
         setDrawable(drawable);
     }
 
     public void setImage(Bitmap bitmap) {
-        Drawable drawable = new BitmapDrawable(getResources(), bitmap);
+        Drawable drawable = null;
+        if (bitmap != null)
+            drawable = new BitmapDrawable(getResources(), bitmap);
 
         setDrawable(drawable);
     }
@@ -310,26 +379,41 @@ public class AfkImageView_BANK extends View {
         setDrawable(drawable);
     }
 
-    public void setExcessiveAnimation(TransitionAnimation animation) {
+    public void setTransitionAnimation(TransitionAnimation animation) {
         this.mTransitionAnimation = animation;
     }
 
     /**
      * 设置是否播放动画切换效果
+     *
      * @param enable
      */
-    public void setExcessiveAnimationEnable(boolean enable){
-        this.mExcessiveAnimatorEable = enable;
+    public void setTransitionAnimationEnable(boolean enable) {
+        this.mTransitionAnimatorEnable = enable;
+
+        setDuration(mDuration);
     }
 
     /**
      * 设置动画类型（使用foundation提供的切换效果）
      * 注：现在只提供了一种效果
+     *
      * @param type
      */
     public void setAnimType(AfkImageView_BANK.AnimType type) {
         this.mAnimType = type;
 
-        setExcessiveAnimation(mAnimType);
+        setTransitionAnimation(mAnimType);
+    }
+
+    /**
+     * 设置渐变动画时间
+     *
+     * @param duration
+     */
+    public void setDuration(int duration) {
+        this.mDuration = duration;
+        if (mTransitionAnimation != null)
+            mTransitionAnimation.setDuration(duration);
     }
 }
