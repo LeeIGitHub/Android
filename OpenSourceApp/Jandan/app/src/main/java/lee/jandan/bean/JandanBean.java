@@ -1,6 +1,7 @@
 package lee.jandan.bean;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by Lee on 2016/3/17.
@@ -71,5 +72,4 @@ public abstract class JandanBean<T> implements Serializable {
         return comments;
     }
 
-    public class Bean extends JandanBean<T>{}
 }

@@ -2,4 +2,6 @@
     <string name="app_name">Jandan</string>
     <string name="action_settings">Settings</string>
     <string name="action_share">Share</string>
+
+    <string name="tn_ip_iv_to_awm_vp">tn_ip_iv_to_awm_vp</string>
 </resources>

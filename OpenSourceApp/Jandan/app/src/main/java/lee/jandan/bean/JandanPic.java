@@ -224,22 +224,34 @@ public class JandanPic implements Serializable {
         for (String pic : pics) {
             JandanPic jandanPic = new JandanPic();
             jandanPic.setPic(pic);
+            jandanPic.setComment_ID(wuliaoPic.getComment_ID());
             result.add(jandanPic);
         }
         return result;
     }
 
-    public static List<JandanPic> getJandan(List<WuliaoPic> wuliaoPicList){
-        if(wuliaoPicList == null || wuliaoPicList.size() < 1)
+    public static List<JandanPic> getJandan(List<WuliaoPic> wuliaoPicList) {
+        if (wuliaoPicList == null || wuliaoPicList.size() < 1)
             return null;
 
         List<JandanPic> result = new ArrayList<>();
 
-        for(WuliaoPic wuliaoPic : wuliaoPicList){
+        for (WuliaoPic wuliaoPic : wuliaoPicList) {
             List<JandanPic> jandanPicList = getJandan(wuliaoPic);
-            result.addAll(result.size(),jandanPicList);
+            if (jandanPicList != null)
+                result.addAll(result.size(), jandanPicList);
         }
 
         return result;
+    }
+
+    private int tag;
+
+    public int getTag() {
+        return tag;
+    }
+
+    public void setTag(int tag) {
+        this.tag = tag;
     }
 }

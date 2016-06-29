@@ -3,6 +3,9 @@
     package="lee.jandan">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
 
     <application
         android:allowBackup="true"
@@ -20,8 +23,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".test.activity.LogisticsVehicleMonitor" />
+        <activity android:name=".activity.WuLiaoPicMatchActivity" />
+        <activity android:name=".test.activity.TestMovieActivity"
+            android:launchMode="singleTask"/>
     </application>
 
 </manifest>

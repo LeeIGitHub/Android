@@ -15,25 +15,29 @@ import butterknife.ButterKnife;
  * this activity extends android.support.v7.app.AppCompatActivity;
  */
 public abstract class AfkBaseAppCompatActivity extends AppCompatActivity
-        implements OnClickListener,Handler.Callback {
+        implements OnClickListener, Handler.Callback {
 
     protected Handler mHandler = new Handler(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initBeforeSetContentView(savedInstanceState);
         setContentView(returnContentView());
         init();
         initData(savedInstanceState);
         initView(savedInstanceState);
     }
 
-    protected void init(){
+    protected void initBeforeSetContentView(Bundle savedInstanceState) {
+    }
+
+    protected void init() {
         ButterKnife.bind(this);
     }
 
     /**
-     * 返回layout res id 相当于调用setCotentView
+     * 返回layout res id 相当于调用setContentView
      *
      * @return
      */

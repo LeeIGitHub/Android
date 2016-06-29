@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/AfkLibrary/AfkLibrary.iml" filepath="$PROJECT_DIR$/AfkLibrary/AfkLibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Jandan.iml" filepath="$PROJECT_DIR$/Jandan.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ShareLib/ShareLib.iml" filepath="$PROJECT_DIR$/ShareLib/ShareLib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ShareLib/lee.jandan.share.iml" filepath="$PROJECT_DIR$/ShareLib/lee.jandan.share.iml" />
+    </modules>
+  </component>
+</project>

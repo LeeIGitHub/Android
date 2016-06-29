@@ -33,8 +33,10 @@ public class AfkHttpUtils2 {
         StringRequest request = new StringRequest(method, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                T t = new Gson().fromJson(response, c);
-                listener2.onSuccess(t);
+                T t = null;
+                if (c != null)
+                    t = new Gson().fromJson(response, c);
+                listener2.onSuccess(t, response);
                 listener2.onFinish();
             }
         }, new Response.ErrorListener() {
